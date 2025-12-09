@@ -65,7 +65,7 @@ export function Drawer({ isOpen, onClose, children, title, side = 'left' }: Draw
     <>
       {/* 遮罩层 */}
       <div
-        className={`fixed inset-0 bg-black/50 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0'
         }`}
         style={{ zIndex: Z_INDEX.DRAWER_BACKDROP }}

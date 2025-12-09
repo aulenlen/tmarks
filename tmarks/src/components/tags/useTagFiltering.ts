@@ -32,8 +32,13 @@ export function useTagFiltering(
 
         for (let j = 0; j < ids.length; j++) {
           if (i === j) continue
-          const targetId = ids[j]!
-          map.get(sourceId)!.add(targetId)
+          const targetId = ids[j]
+          if (!targetId) continue
+          
+          const sourceSet = map.get(sourceId)
+          if (sourceSet) {
+            sourceSet.add(targetId)
+          }
         }
       }
     }

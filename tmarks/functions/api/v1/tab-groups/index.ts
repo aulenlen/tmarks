@@ -6,7 +6,7 @@
 
 import type { PagesFunction } from '@cloudflare/workers-types'
 import type { Env, RouteParams, SQLParam } from '../../../lib/types'
-import { success, badRequest, created, internalError } from '../../../lib/response'
+import { success, created, internalError } from '../../../lib/response'
 import { requireAuth, AuthContext } from '../../../middleware/auth'
 import { sanitizeString } from '../../../lib/validation'
 import { generateUUID } from '../../../lib/crypto'
@@ -25,6 +25,8 @@ interface TabGroupRow {
   created_at: string
   updated_at: string
 }
+
+// 注意：此接口已与 /api/tab/tab-groups 保持完全一致
 
 interface TabGroupItemRow {
   id: string
@@ -98,7 +100,7 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
              FROM tab_group_items tgi
              JOIN tab_groups tg ON tgi.group_id = tg.id
              WHERE tgi.group_id = ? AND tg.user_id = ?
-             ORDER BY tgi.position ASC`
+             ORDER BY COALESCE(tgi.is_pinned, 0) DESC, tgi.position ASC`
           )
             .bind(group.id, userId)
             .all<TabGroupItemRow>()
@@ -140,10 +142,11 @@ export const onRequestPost: PagesFunction<Env, RouteParams, AuthContext>[] = [
 
       const isFolder = body.is_folder || false
 
-      // Validate: folders don't need items, but regular groups do
-      if (!isFolder && (!body.items || body.items.length === 0)) {
-        return badRequest('At least one tab item is required for non-folder groups')
-      }
+      // Validate: folders don't need items, but regular groups can be empty
+      // 允许创建空的标签页组，用户可以稍后添加项目
+      // if (!isFolder && (!body.items || body.items.length === 0)) {
+      //   return badRequest('At least one tab item is required for non-folder groups')
+      // }
 
       // Generate title if not provided (timestamp format for groups, "新文件夹" for folders)
       const now = new Date()

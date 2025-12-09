@@ -14,6 +14,13 @@ interface TabGroupRow {
   id: string
   user_id: string
   title: string
+  color: string | null
+  tags: string | null
+  parent_id: string | null
+  is_folder: number
+  is_deleted: number
+  deleted_at: string | null
+  position: number
   created_at: string
   updated_at: string
 }
@@ -32,6 +39,10 @@ interface TabGroupItemRow {
 
 interface UpdateTabGroupRequest {
   title?: string
+  color?: string | null
+  tags?: string[] | null
+  parent_id?: string | null
+  position?: number
 }
 
 // GET /api/v1/tab-groups/:id - 获取单个标签页组详情
@@ -59,7 +70,7 @@ export const onRequestGet: PagesFunction<Env, RouteParams, AuthContext>[] = [
          FROM tab_group_items tgi
          JOIN tab_groups tg ON tgi.group_id = tg.id
          WHERE tgi.group_id = ? AND tg.user_id = ?
-         ORDER BY tgi.position ASC`
+         ORDER BY COALESCE(tgi.is_pinned, 0) DESC, tgi.position ASC`
       )
         .bind(groupId, userId)
         .all<TabGroupItemRow>()
@@ -86,7 +97,13 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
     const groupId = context.params.id
 
     try {
-      const body = (await context.request.json()) as UpdateTabGroupRequest
+      let body: UpdateTabGroupRequest
+      try {
+        body = (await context.request.json()) as UpdateTabGroupRequest
+      } catch (parseError) {
+        console.error('Failed to parse request body:', parseError)
+        return badRequest('Invalid request body: ' + (parseError instanceof Error ? parseError.message : 'JSON parse error'))
+      }
 
       // Check if tab group exists and belongs to user
       const groupRow = await context.env.DB.prepare(
@@ -101,11 +118,31 @@ export const onRequestPatch: PagesFunction<Env, RouteParams, AuthContext>[] = [
 
       // Build update query
       const updates: string[] = []
-      const params: Array<string | number> = []
+      const params: Array<string | number | null> = []
 
       if (body.title !== undefined) {
         updates.push('title = ?')
         params.push(sanitizeString(body.title, 200))
+      }
+
+      if (body.parent_id !== undefined) {
+        updates.push('parent_id = ?')
+        params.push(body.parent_id)
+      }
+
+      if (body.position !== undefined) {
+        updates.push('position = ?')
+        params.push(body.position)
+      }
+
+      if (body.color !== undefined) {
+        updates.push('color = ?')
+        params.push(body.color)
+      }
+
+      if (body.tags !== undefined) {
+        updates.push('tags = ?')
+        params.push(body.tags ? JSON.stringify(body.tags) : null)
       }
 
       if (updates.length === 0) {

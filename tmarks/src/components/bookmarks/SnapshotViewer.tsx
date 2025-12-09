@@ -281,7 +281,7 @@ export function SnapshotViewer({ bookmarkId, bookmarkTitle, snapshotCount = 0 }:
       {!isOpen && snapshotCount > 0 && (
         <button
           onClick={handleOpen}
-          className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:scale-105 active:scale-95 transition-all"
+          className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all"
           title={`查看 ${snapshotCount} 个快照`}
         >
           <Camera className="w-3 h-3" strokeWidth={2} />

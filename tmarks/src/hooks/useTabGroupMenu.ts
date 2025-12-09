@@ -8,13 +8,9 @@ export interface TabGroupMenuActions {
   onRename: (group: TabGroup) => void
   onShare: (group: TabGroup) => void
   onCopyToClipboard: (group: TabGroup) => void
-  onImportLinks: (group: TabGroup) => void
   onCreateFolderAbove: (group: TabGroup) => void
   onCreateFolderInside: (group: TabGroup) => void
   onCreateFolderBelow: (group: TabGroup) => void
-  onCreateGroupAbove: (group: TabGroup) => void
-  onCreateGroupInside: (group: TabGroup) => void
-  onCreateGroupBelow: (group: TabGroup) => void
   onPinToTop: (group: TabGroup) => void
   onRemoveDuplicates: (group: TabGroup) => void
   onLock: (group: TabGroup) => void
@@ -55,7 +51,17 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
     }
 
     try {
-      const html = `<!DOCTYPE html>
+      // 获取当前主题颜色
+    const root = document.documentElement
+    const primary = getComputedStyle(root).getPropertyValue('--primary').trim()
+    const accent = getComputedStyle(root).getPropertyValue('--accent').trim()
+    const card = getComputedStyle(root).getPropertyValue('--card').trim()
+    const muted = getComputedStyle(root).getPropertyValue('--muted').trim()
+    const success = getComputedStyle(root).getPropertyValue('--success').trim()
+    const destructive = getComputedStyle(root).getPropertyValue('--destructive').trim()
+    const foreground = getComputedStyle(root).getPropertyValue('--foreground').trim()
+
+    const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -69,16 +75,16 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
       justify-content: center;
       min-height: 100vh;
       margin: 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      background: linear-gradient(135deg, ${primary} 0%, ${accent} 100%);
+      color: ${foreground};
     }
     .container {
       text-align: center;
       padding: 2rem;
-      background: rgba(255, 255, 255, 0.1);
+      background: ${card};
       backdrop-filter: blur(10px);
       border-radius: 1rem;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 8px 32px hsl(0 0% 0% / 0.15);
       max-width: 600px;
     }
     h1 { margin: 0 0 1rem 0; font-size: 2rem; }
@@ -90,7 +96,7 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
     .status {
       margin: 1rem 0;
       padding: 1rem;
-      background: rgba(255, 255, 255, 0.2);
+      background: ${muted};
       border-radius: 0.5rem;
       font-size: 0.9rem;
     }
@@ -100,29 +106,29 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
       max-height: 300px;
       overflow-y: auto;
       padding: 1rem;
-      background: rgba(0, 0, 0, 0.2);
+      background: ${muted};
       border-radius: 0.5rem;
     }
     .link-item {
       padding: 0.5rem;
       margin: 0.25rem 0;
-      background: rgba(255, 255, 255, 0.1);
+      background: ${card};
       border-radius: 0.25rem;
       font-size: 0.85rem;
       word-break: break-all;
     }
     .link-item.opened {
-      background: rgba(76, 175, 80, 0.3);
+      background: color-mix(in srgb, ${success} 30%, transparent);
     }
     .link-item.failed {
-      background: rgba(244, 67, 54, 0.3);
+      background: color-mix(in srgb, ${destructive} 30%, transparent);
     }
     button {
       margin-top: 1rem;
       padding: 0.75rem 2rem;
       font-size: 1rem;
-      background: white;
-      color: #667eea;
+      background: ${primary};
+      color: ${foreground};
       border: none;
       border-radius: 0.5rem;
       cursor: pointer;
@@ -193,10 +199,12 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
       
       if (failed > 0) {
         statusEl.textContent = '✅ 成功打开 ' + opened + ' 个，❌ 失败 ' + failed + ' 个';
-        statusEl.style.background = 'rgba(255, 152, 0, 0.3)';
+        statusEl.style.background = 'var(--warning)';
+        statusEl.style.opacity = '0.3';
       } else {
         statusEl.textContent = '✅ 全部打开成功！共 ' + opened + ' 个标签页';
-        statusEl.style.background = 'rgba(76, 175, 80, 0.3)';
+        statusEl.style.background = 'var(--success)';
+        statusEl.style.opacity = '0.3';
       }
       
       closeBtnEl.style.display = 'block';
@@ -277,47 +285,6 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
     }
   }
 
-  const onImportLinks = async (group: TabGroup) => {
-    const text = prompt('请粘贴要导入的链接（每行一个）：\n\n提示：可以粘贴多行链接，每行一个URL')
-    if (!text) return
-
-    const urls = text.split('\n')
-      .map(line => line.trim())
-      .filter(line => line && (line.startsWith('http://') || line.startsWith('https://')))
-
-    if (urls.length === 0) {
-      alert('没有找到有效的链接')
-      return
-    }
-
-    try {
-      // 将 URL 转换为标签页项格式
-      const items = urls.map(url => {
-        try {
-          const urlObj = new URL(url)
-          return {
-            title: urlObj.hostname,
-            url: url,
-            favicon: `${urlObj.origin}/favicon.ico`,
-          }
-        } catch {
-          return {
-            title: url,
-            url: url,
-          }
-        }
-      })
-
-      // 批量添加
-      await tabGroupsService.addItemsToGroup(group.id, items)
-      alert(`成功导入 ${urls.length} 个链接`)
-      await onRefresh?.()
-    } catch (err) {
-      console.error('Failed to import:', err)
-      alert('导入失败')
-    }
-  }
-
   const onCreateFolderAbove = async (group: TabGroup) => {
     try {
       await tabGroupsService.createFolder('新文件夹', group.parent_id)
@@ -346,49 +313,6 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
     } catch (err) {
       console.error('Failed to create folder:', err)
       alert('创建文件夹失败')
-    }
-  }
-
-  const onCreateGroupAbove = async (group: TabGroup) => {
-    try {
-      await tabGroupsService.createTabGroup({
-        title: '新分组',
-        parent_id: group.parent_id,
-        is_folder: false
-      })
-      await onRefresh?.()
-    } catch (err) {
-      console.error('Failed to create group:', err)
-      alert('创建分组失败')
-    }
-  }
-
-  const onCreateGroupInside = async (group: TabGroup) => {
-    if (group.is_folder !== 1) return
-    try {
-      await tabGroupsService.createTabGroup({
-        title: '新分组',
-        parent_id: group.id,
-        is_folder: false
-      })
-      await onRefresh?.()
-    } catch (err) {
-      console.error('Failed to create group:', err)
-      alert('创建分组失败')
-    }
-  }
-
-  const onCreateGroupBelow = async (group: TabGroup) => {
-    try {
-      await tabGroupsService.createTabGroup({
-        title: '新分组',
-        parent_id: group.parent_id,
-        is_folder: false
-      })
-      await onRefresh?.()
-    } catch (err) {
-      console.error('Failed to create group:', err)
-      alert('创建分组失败')
     }
   }
 
@@ -488,13 +412,9 @@ export function useTabGroupMenu({ onRefresh, onStartRename, onOpenMoveDialog }: 
     onRename,
     onShare,
     onCopyToClipboard,
-    onImportLinks,
     onCreateFolderAbove,
     onCreateFolderInside,
     onCreateFolderBelow,
-    onCreateGroupAbove,
-    onCreateGroupInside,
-    onCreateGroupBelow,
     onPinToTop,
     onRemoveDuplicates,
     onLock,

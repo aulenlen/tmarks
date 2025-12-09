@@ -248,7 +248,7 @@ export function DragDropUpload({
 
         {/* 拖拽覆盖层 */}
         {state.isDragOver && (
-          <div className="absolute inset-0 bg-black bg-opacity-5 rounded-lg pointer-events-none" />
+          <div className="absolute inset-0 bg-muted/20 rounded-lg pointer-events-none" />
         )}
       </div>
 

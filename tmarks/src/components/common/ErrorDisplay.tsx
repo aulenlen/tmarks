@@ -58,31 +58,31 @@ export function ErrorDisplay({
   // 样式配置
   const variantConfig = {
     error: {
-      containerClass: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
-      iconClass: 'text-red-600 dark:text-red-400',
-      titleClass: 'text-red-800 dark:text-red-200',
-      textClass: 'text-red-700 dark:text-red-300',
+      containerClass: 'bg-destructive/10 border-destructive/20',
+      iconClass: 'text-destructive',
+      titleClass: 'text-destructive',
+      textClass: 'text-destructive/90',
       icon: AlertCircle
     },
     warning: {
-      containerClass: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800',
-      iconClass: 'text-yellow-600 dark:text-yellow-400',
-      titleClass: 'text-yellow-800 dark:text-yellow-200',
-      textClass: 'text-yellow-700 dark:text-yellow-300',
+      containerClass: 'bg-warning/10 border-warning/20',
+      iconClass: 'text-warning',
+      titleClass: 'text-warning',
+      textClass: 'text-warning/90',
       icon: AlertTriangle
     },
     info: {
-      containerClass: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
-      iconClass: 'text-blue-600 dark:text-blue-400',
-      titleClass: 'text-blue-800 dark:text-blue-200',
-      textClass: 'text-blue-700 dark:text-blue-300',
+      containerClass: 'bg-primary/10 border-primary/20',
+      iconClass: 'text-primary',
+      titleClass: 'text-primary',
+      textClass: 'text-primary/90',
       icon: Info
     },
     success: {
-      containerClass: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
-      iconClass: 'text-green-600 dark:text-green-400',
-      titleClass: 'text-green-800 dark:text-green-200',
-      textClass: 'text-green-700 dark:text-green-300',
+      containerClass: 'bg-success/10 border-success/20',
+      iconClass: 'text-success',
+      titleClass: 'text-success',
+      textClass: 'text-success/90',
       icon: CheckCircle
     }
   }
@@ -167,7 +167,7 @@ export function ErrorDisplay({
           {onRetry && (
             <button
               onClick={onRetry}
-              className={`p-1.5 sm:p-2 rounded-md ${config.textClass} hover:bg-black/5 dark:hover:bg-white/5 touch-manipulation`}
+              className={`p-1.5 sm:p-2 rounded-md ${config.textClass} hover:bg-muted/50 touch-manipulation`}
               title="重试"
             >
               <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -177,7 +177,7 @@ export function ErrorDisplay({
           {dismissible && (
             <button
               onClick={onDismiss}
-              className={`p-1.5 sm:p-2 rounded-md ${config.textClass} hover:bg-black/5 dark:hover:bg-white/5 touch-manipulation`}
+              className={`p-1.5 sm:p-2 rounded-md ${config.textClass} hover:bg-muted/50 touch-manipulation`}
               title="关闭"
             >
               <X className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -205,10 +205,10 @@ function ErrorItem({ error, variant, showDetails, onCopy, isCopied }: ErrorItemP
   const [isDetailsExpanded, setIsDetailsExpanded] = useState(false)
 
   const variantConfig = {
-    error: 'text-red-700 dark:text-red-300',
-    warning: 'text-yellow-700 dark:text-yellow-300',
-    info: 'text-blue-700 dark:text-blue-300',
-    success: 'text-green-700 dark:text-green-300'
+    error: 'text-destructive/90',
+    warning: 'text-warning/90',
+    info: 'text-primary/90',
+    success: 'text-success/90'
   }
 
   const textClass = variantConfig[variant]
@@ -223,14 +223,14 @@ function ErrorItem({ error, variant, showDetails, onCopy, isCopied }: ErrorItemP
             )}
             <span className="break-words">{error.message}</span>
             {error.code && (
-              <span className="ml-2 px-1.5 py-0.5 text-xs bg-black/10 dark:bg-white/10 rounded whitespace-nowrap">
+              <span className="ml-2 px-1.5 py-0.5 text-xs bg-muted/50 rounded whitespace-nowrap">
                 {error.code}
               </span>
             )}
           </p>
 
           {error.details && (showDetails || isDetailsExpanded) && (
-            <div className="mt-2 p-2 bg-black/5 dark:bg-white/5 rounded text-xs font-mono break-all">
+            <div className="mt-2 p-2 bg-muted/30 rounded text-xs font-mono break-all">
               {error.details}
             </div>
           )}
@@ -240,7 +240,7 @@ function ErrorItem({ error, variant, showDetails, onCopy, isCopied }: ErrorItemP
           {error.details && !showDetails && (
             <button
               onClick={() => setIsDetailsExpanded(!isDetailsExpanded)}
-              className={`p-1.5 rounded text-xs ${textClass} hover:bg-black/5 dark:hover:bg-white/5 touch-manipulation`}
+              className={`p-1.5 rounded text-xs ${textClass} hover:bg-muted/50 touch-manipulation`}
               title="查看详情"
             >
               {isDetailsExpanded ? (
@@ -253,7 +253,7 @@ function ErrorItem({ error, variant, showDetails, onCopy, isCopied }: ErrorItemP
 
           <button
             onClick={onCopy}
-            className={`p-1.5 rounded text-xs ${textClass} hover:bg-black/5 dark:hover:bg-white/5 touch-manipulation`}
+            className={`p-1.5 rounded text-xs ${textClass} hover:bg-muted/50 touch-manipulation`}
             title={isCopied ? "已复制" : "复制错误信息"}
           >
             {isCopied ? (
@@ -312,7 +312,7 @@ interface InlineErrorProps {
 
 export function InlineError({ message, className = '' }: InlineErrorProps) {
   return (
-    <div className={`flex items-center space-x-1 text-sm text-red-600 dark:text-red-400 ${className}`}>
+    <div className={`flex items-center space-x-1 text-sm text-destructive ${className}`}>
       <AlertCircle className="h-4 w-4 flex-shrink-0" />
       <span>{message}</span>
     </div>

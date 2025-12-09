@@ -22,8 +22,6 @@ export const tabGroupsService = {
     const endpoint = query ? `/tab-groups?${query}` : '/tab-groups'
 
     const response = await apiClient.get<TabGroupsResponse>(endpoint)
-    // 调试日志
-    console.log('[tabGroupsService] API response:', JSON.stringify(response.data, null, 2))
     return response.data!
   },
 

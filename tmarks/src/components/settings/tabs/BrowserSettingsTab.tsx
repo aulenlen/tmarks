@@ -53,7 +53,7 @@ export function BrowserSettingsTab() {
       // Edge 浏览器图标
       if (browser === 'edge') {
         return (
-          <svg className={baseClass} viewBox="0 0 24 24" fill="currentColor" style={{ color: '#0078D4' }}>
+          <svg className={`${baseClass} text-primary`} viewBox="0 0 24 24" fill="currentColor">
             <path d="M20.5 12c0-4.7-3.8-8.5-8.5-8.5S3.5 7.3 3.5 12c0 4.1 2.9 7.5 6.8 8.3.5.1 1 .2 1.5.2 4.7 0 8.5-3.8 8.5-8.5h.2zm-8.5 7c-3.9 0-7-3.1-7-7s3.1-7 7-7 7 3.1 7 7-3.1 7-7 7z"/>
             <path d="M12 7c-2.8 0-5 2.2-5 5s2.2 5 5 5c1.9 0 3.6-1.1 4.4-2.7-.7.4-1.5.7-2.4.7-2.8 0-5-2.2-5-5 0-.9.2-1.7.6-2.4C10.4 7.2 11.2 7 12 7z"/>
           </svg>
@@ -62,7 +62,7 @@ export function BrowserSettingsTab() {
       // 360 浏览器图标
       if (browser === '360') {
         return (
-          <svg className={baseClass} viewBox="0 0 24 24" fill="currentColor" style={{ color: '#14B866' }}>
+          <svg className={`${baseClass} text-success`} viewBox="0 0 24 24" fill="currentColor">
             <circle cx="12" cy="12" r="10" opacity="0.2"/>
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
             <path d="M12 6v12M6 12h12"/>

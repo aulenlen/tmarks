@@ -3,6 +3,7 @@ import { Share2, Copy, RefreshCw } from 'lucide-react'
 import { useShareSettings, useUpdateShareSettings } from '@/hooks/useShare'
 import { useToastStore } from '@/stores/toastStore'
 import { InfoBox } from '../InfoBox'
+import { Toggle } from '@/components/common/Toggle'
 
 export function ShareSettingsTab() {
   const { data, isLoading } = useShareSettings()
@@ -106,15 +107,10 @@ export function ShareSettingsTab() {
               开启后，其他人可以通过链接访问你的公开书签
             </div>
           </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={enabled}
-              onChange={(e) => setEnabled(e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-background after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-          </label>
+          <Toggle
+            checked={enabled}
+            onChange={setEnabled}
+          />
         </div>
 
         {/* 分享链接设置 */}

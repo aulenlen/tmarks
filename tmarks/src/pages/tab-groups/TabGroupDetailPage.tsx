@@ -13,7 +13,7 @@ import {
   Layers,
 } from 'lucide-react'
 import { tabGroupsService } from '@/services/tab-groups'
-import type { TabGroup } from '@/lib/types'
+import type { TabGroup, TabGroupItem } from '@/lib/types'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { useToastStore } from '@/stores/toastStore'
@@ -29,6 +29,10 @@ export function TabGroupDetailPage() {
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState('')
   const [isSavingTitle, setIsSavingTitle] = useState(false)
+  
+  // Item editing state
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
+  const [editingItemTitle, setEditingItemTitle] = useState('')
 
   // Confirm dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -86,6 +90,42 @@ export function TabGroupDetailPage() {
   const handleCancelEdit = () => {
     setEditedTitle(tabGroup?.title || '')
     setIsEditingTitle(false)
+  }
+
+  const handleEditItem = (item: TabGroupItem) => {
+    setEditingItemId(item.id)
+    setEditingItemTitle(item.title)
+  }
+
+  const handleSaveItemEdit = async (itemId: string) => {
+    if (!editingItemTitle.trim()) {
+      showError('标题不能为空')
+      return
+    }
+
+    try {
+      await tabGroupsService.updateTabGroupItem(itemId, { title: editingItemTitle.trim() })
+      
+      // Update local state
+      if (tabGroup) {
+        const updatedItems = tabGroup.items?.map(item =>
+          item.id === itemId ? { ...item, title: editingItemTitle.trim() } : item
+        )
+        setTabGroup({ ...tabGroup, items: updatedItems })
+      }
+      
+      setEditingItemId(null)
+      setEditingItemTitle('')
+      success('更新成功')
+    } catch (err) {
+      logger.error('Failed to update item:', err)
+      showError('更新失败，请重试')
+    }
+  }
+
+  const handleCancelItemEdit = () => {
+    setEditingItemId(null)
+    setEditingItemTitle('')
   }
 
   const handleDelete = () => {
@@ -314,44 +354,106 @@ export function TabGroupDetailPage() {
             </div>
 
             {/* Tab Items */}
-            {tabGroup.items.map((item, index) => (
-              <div
-                key={item.id}
-                className="group relative flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-success/50 hover:shadow-md transition-all duration-200 cursor-pointer"
-                onClick={() => handleOpenTab(item.url)}
-              >
-                {/* Index Badge */}
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-success/20 to-success/10 flex-shrink-0">
-                  <span
-                    className="text-sm font-semibold"
-                    style={{ color: 'var(--foreground)' }}
-                  >
-                    {index + 1}
-                  </span>
+            {tabGroup.items.map((item, index) => {
+              const isEditing = editingItemId === item.id
+              
+              return (
+                <div
+                  key={item.id}
+                  className="group relative flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-success/50 hover:shadow-md transition-all duration-200"
+                >
+                  {/* Index Badge */}
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-success/20 to-success/10 flex-shrink-0">
+                    <span
+                      className="text-sm font-semibold"
+                      style={{ color: 'var(--foreground)' }}
+                    >
+                      {index + 1}
+                    </span>
+                  </div>
+
+                  {/* Favicon */}
+                  {item.favicon && (
+                    <img src={item.favicon} alt="" className="w-5 h-5 rounded flex-shrink-0" />
+                  )}
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editingItemTitle}
+                        onChange={(e) => setEditingItemTitle(e.target.value)}
+                        className="w-full px-2 py-1 rounded border border-border bg-card text-sm font-medium mb-1"
+                        style={{ color: 'var(--foreground)' }}
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveItemEdit(item.id)
+                          if (e.key === 'Escape') handleCancelItemEdit()
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      <h3 
+                        className="font-medium truncate mb-0.5 cursor-pointer hover:text-primary transition-colors" 
+                        style={{ color: 'var(--foreground)' }}
+                        onClick={() => handleOpenTab(item.url)}
+                      >
+                        {item.title}
+                      </h3>
+                    )}
+                    <p className="text-sm truncate" style={{ color: 'var(--muted-foreground)' }}>
+                      {item.url}
+                    </p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                    {isEditing ? (
+                      <>
+                        <button
+                          onClick={() => handleSaveItemEdit(item.id)}
+                          className="p-1.5 rounded-lg bg-success text-success-foreground hover:bg-success/90 transition-colors"
+                          title="保存"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={handleCancelItemEdit}
+                          className="p-1.5 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                          title="取消"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleEditItem(item)
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors"
+                          title="编辑"
+                        >
+                          <Edit2 className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleOpenTab(item.url)
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors"
+                          title="打开"
+                        >
+                          <ExternalLink className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-
-                {/* Favicon */}
-                {item.favicon && (
-                  <img src={item.favicon} alt="" className="w-5 h-5 rounded flex-shrink-0" />
-                )}
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium truncate mb-0.5" style={{ color: 'var(--foreground)' }}>
-                    {item.title}
-                  </h3>
-                  <p className="text-sm truncate" style={{ color: 'var(--muted-foreground)' }}>
-                    {item.url}
-                  </p>
-                </div>
-
-                {/* Hover Icon */}
-                <ExternalLink
-                  className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                  style={{ color: 'var(--muted-foreground)' }}
-                />
-              </div>
-            ))}
+              )
+            })}
           </>
         ) : (
           <div className="text-center py-12 rounded-2xl border border-border bg-card">

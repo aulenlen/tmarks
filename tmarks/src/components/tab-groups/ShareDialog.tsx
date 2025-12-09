@@ -191,7 +191,7 @@ export function ShareDialog({ groupId, groupTitle, onClose }: ShareDialogProps) 
 
               {/* 删除确认对话框 */}
               {showDeleteConfirm && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: Z_INDEX.CONFIRM_DIALOG }} onClick={() => setShowDeleteConfirm(false)}>
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" style={{ zIndex: Z_INDEX.CONFIRM_DIALOG }} onClick={() => setShowDeleteConfirm(false)}>
                   <div className="bg-card rounded-2xl p-6 max-w-sm w-full border border-border" onClick={(e) => e.stopPropagation()}>
                     <h3 className="text-lg font-semibold mb-2">确认删除</h3>
                     <p className="text-sm text-muted-foreground mb-6">确定要删除分享链接吗？删除后链接将失效。</p>
@@ -218,7 +218,7 @@ export function ShareDialog({ groupId, groupTitle, onClose }: ShareDialogProps) 
 
               {/* 复制失败提示 */}
               {showCopyError && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: Z_INDEX.ALERT_DIALOG }} onClick={() => setShowCopyError(false)}>
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" style={{ zIndex: Z_INDEX.ALERT_DIALOG }} onClick={() => setShowCopyError(false)}>
                   <div className="bg-card rounded-2xl p-6 max-w-sm w-full border border-border" onClick={(e) => e.stopPropagation()}>
                     <h3 className="text-lg font-semibold mb-2">复制失败</h3>
                     <p className="text-sm text-muted-foreground mb-6">无法复制到剪贴板，请手动复制链接。</p>
